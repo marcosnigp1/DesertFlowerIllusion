@@ -6,8 +6,54 @@ import board
 import audiocore
 import audiobusio
 import audiomixer
-from digitalio import DigitalInOut, Direction
+import neopixel
+from digitalio import DigitalInOut, Direction, Pull # Pull suggested by ChatGPT
 import adafruit_hcsr04  # We need this to get the ultrasonic sensor working.
+
+# ------------------------------------------------------------- #
+# ------------------------------------------------------------- #
+# ------------------------------------------------------------- #
+
+###############################
+### WHICH BOARD IS THIS? #####
+##############################
+
+# The project follows the following scheme:
+
+#     1
+#   /    \
+# 2  ---  3
+
+# So please assign the board number here:
+board_id = 1
+
+
+# Ok now that I know which board I am, I will now prepared the inputs and outputs:
+
+#ChatGPT helped me a bit here in these parts for the input and output using the Analogue connections.
+if board_id == 1:
+    signal_pin1 = DigitalInOut(board.D5)
+    signal_pin1.direction = Direction.OUTPUT
+
+    receiving_pin1 = DigitalInOut(board.D6)
+    receiving_pin1.direction = Direction.INPUT
+    receiving_pin1.pull = Pull.DOWN   # Ensures it reads LOW when not connected
+
+
+elif board_id == 2:
+    receiving_pin2 = DigitalInOut(board.D6)
+    receiving_pin2.direction = Direction.INPUT
+    receiving_pin2.pull = Pull.DOWN  # Ensures it reads LOW when not connected
+
+
+# ------------------------------------------------------------- #
+# ------------------------------------------------------------- #
+# ------------------------------------------------------------- #
+
+# Neopixel setup:
+neopixel_pin = board.EXTERNAL_NEOPIXELS  # External Neopixel pin
+num_pixels = 12
+pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=0.8, auto_write=True)
 
 
 # Enable external power pin for the Speaker.
@@ -50,6 +96,15 @@ while True:
     # Print ultrasonic sensor values.
     # Get distance.
     try:
+
+        if board_id == 2:
+            if receiving_pin2.value:
+                # Send this to neopixel!
+                pixels.fill((255, 255, 255))
+            else:
+                # No signal :(
+                pixels.fill((0, 0, 0))
+
         # --- Get values ----- #
         distance = ultrasonic.distance  # In cm
         print(f"Distance: {distance:.2f} cm")
@@ -62,22 +117,37 @@ while True:
               
         if distance > 40:
             global_volume = 1.0
+            if board_id == 1:
+                signal_pin1.value = False
+
             cooldown = 1.0
             
         elif distance > 30:
             global_volume = 1.00
+            if board_id == 1:
+                signal_pin1.value = False
+
             cooldown = 0.8
 
         elif distance > 20:
             global_volume = 1.00
+            if board_id == 1:
+                signal_pin1.value = False
+
             cooldown = 0.5
 
         elif distance > 10:
             global_volume = 1.00
+            if board_id == 1:
+                signal_pin1.value = False
+
             cooldown = 0.3
         
         elif distance > 0:
             global_volume = 1.00
+            if board_id == 1:
+                signal_pin1.value = True
+
             cooldown = 0.1            
 
   
