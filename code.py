@@ -3,6 +3,7 @@
 
 import time
 import board
+import analogio  # For the photoresistor.
 import audiocore
 import audiobusio
 import audiomixer
@@ -49,6 +50,15 @@ elif board_id == 2:
 # ------------------------------------------------------------- #
 # ------------------------------------------------------------- #
 # ------------------------------------------------------------- #
+
+# Photoresistor Set-up
+photoresistor = analogio.AnalogIn(board.A3)
+
+# Function to get the values from the photoresistor.
+def get_voltage(pin):
+    return (
+        pin.value * 3.3
+    ) / 65535  # Convert 16-bit reading to volts (suggested by ChatGPT) and also taken from an earlier project I did.
 
 # Neopixel setup:
 neopixel_pin = board.EXTERNAL_NEOPIXELS  # External Neopixel pin
@@ -106,9 +116,11 @@ while True:
                 pixels.fill((0, 0, 0))
 
         # --- Get values ----- #
+        voltage = get_voltage(photoresistor)
         distance = ultrasonic.distance  # In cm
+        print("Photoresistor voltage:", round(voltage, 3))
         print(f"Distance: {distance:.2f} cm")
-
+        
         sound = beep # Play beep sound.if
 
 
