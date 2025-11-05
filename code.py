@@ -19,10 +19,6 @@ import adafruit_hcsr04  # We need this to get the ultrasonic sensor working.
 ### WHICH BOARD IS THIS? #####
 ##############################
 
-# Distance testing mode
-
-testing_mode = 1
-
 # The project follows the following scheme:
 
 #     1
@@ -32,15 +28,21 @@ testing_mode = 1
 # So please assign the board number here:
 board_id = 1
 
+# Distance testing mode
+testing_mode = 1
+
 # Level of intensity
 level_intensity = 0  # Starts at 0. There are 3 levels of intensity, the first one
                      # is where the main structure glitches and the rest stay quiet.
-                     # On the second level, 
+                     # On the second level, it glitches more and the rest of the devices
+                     # go into level 1. On level 3, everything sets to level 3.
 
 # Ok now that I know which board I am, I will now prepared the inputs and outputs:
 
 #ChatGPT helped me a bit here in these parts for the input and output using the Analogue connections.
 if board_id == 1:
+    
+    # Connection with board 2
     signal_pin_1_to_2 = DigitalInOut(board.D5)
     signal_pin_1_to_2.direction = Direction.OUTPUT
 
@@ -49,7 +51,18 @@ if board_id == 1:
     receiving_pin_1_from_2.pull = Pull.DOWN   # Ensures it reads LOW when not connected
 
 
+    # Connection with board 3
+    signal_pin_1_to_3 = DigitalInOut(board.D9)
+    signal_pin_1_to_3.direction = Direction.OUTPUT
+
+    receiving_pin_1_from_3 = DigitalInOut(board.D10)
+    receiving_pin_1_from_3.direction = Direction.INPUT
+    receiving_pin_1_from_3.pull = Pull.DOWN   # Ensures it reads LOW when not connected
+
+
 elif board_id == 2:
+
+    # Connection with board 1
     signal_pin_2_to_1 = DigitalInOut(board.D5)
     signal_pin_2_to_1.direction = Direction.OUTPUT
 
@@ -57,6 +70,33 @@ elif board_id == 2:
     receiving_pin_2_from_1.direction = Direction.INPUT
     receiving_pin_2_from_1.pull = Pull.DOWN  # Ensures it reads LOW when not connected
 
+
+    # Connection with board 3
+    signal_pin_2_to_3 = DigitalInOut(board.D9)
+    signal_pin_2_to_3.direction = Direction.OUTPUT
+
+    receiving_pin_2_from_3 = DigitalInOut(board.D10)
+    receiving_pin_2_from_3.direction = Direction.INPUT
+    receiving_pin_2_from_3.pull = Pull.DOWN  # Ensures it reads LOW when not connected
+
+
+elif board_id == 3:
+
+    # Connection with board 1
+    signal_pin_3_to_1 = DigitalInOut(board.D5)
+    signal_pin_3_to_1.direction = Direction.OUTPUT
+
+    receiving_pin_3_from_1 = DigitalInOut(board.D6)
+    receiving_pin_3_from_1.direction = Direction.INPUT
+    receiving_pin_3_from_1.pull = Pull.DOWN  # Ensures it reads LOW when not connected
+
+    # Connection with board 2
+    signal_pin_3_to_2 = DigitalInOut(board.D9)
+    signal_pin_3_to_2.direction = Direction.OUTPUT
+
+    receiving_pin_3_from_2 = DigitalInOut(board.D10)
+    receiving_pin_3_from_2.direction = Direction.INPUT
+    receiving_pin_3_from_2.pull = Pull.DOWN  # Ensures it reads LOW when not connected
 
 # ------------------------------------------------------------- #
 # ------------------------------------------------------------- #
