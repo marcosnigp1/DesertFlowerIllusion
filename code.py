@@ -16,7 +16,7 @@ import adafruit_hcsr04  # We need this to get the ultrasonic sensor working.
 # ------------------------------------------------------------- #
 
 ###############################
-### WHICH BOARD IS THIS? #####
+### BOARD CONFIGURATION  #####
 ##############################
 
 # The project follows the following scheme:
@@ -24,9 +24,6 @@ import adafruit_hcsr04  # We need this to get the ultrasonic sensor working.
 #     1
 #   /    \
 # 2  ---  3
-
-# So please assign the board number here:
-board_id = 1
 
 # Distance testing mode
 testing_mode = 1
@@ -37,66 +34,25 @@ level_intensity = 0  # Starts at 0. There are 3 levels of intensity, the first o
                      # On the second level, it glitches more and the rest of the devices
                      # go into level 1. On level 3, everything sets to level 3.
 
-# Ok now that I know which board I am, I will now prepared the inputs and outputs:
 
 #ChatGPT helped me a bit here in these parts for the input and output using the Analogue connections.
-if board_id == 1:
-    
-    # Connection with board 2
-    signal_pin_1_to_2 = DigitalInOut(board.D5)
-    signal_pin_1_to_2.direction = Direction.OUTPUT
+#     
+# Connection from one side
+signal_pin_1 = DigitalInOut(board.D5)
+signal_pin_1.direction = Direction.OUTPUT
 
-    receiving_pin_1_from_2 = DigitalInOut(board.D6)
-    receiving_pin_1_from_2.direction = Direction.INPUT
-    receiving_pin_1_from_2.pull = Pull.DOWN   # Ensures it reads LOW when not connected
-
-
-    # Connection with board 3
-    signal_pin_1_to_3 = DigitalInOut(board.D9)
-    signal_pin_1_to_3.direction = Direction.OUTPUT
-
-    receiving_pin_1_from_3 = DigitalInOut(board.D10)
-    receiving_pin_1_from_3.direction = Direction.INPUT
-    receiving_pin_1_from_3.pull = Pull.DOWN   # Ensures it reads LOW when not connected
+receiving_pin_1 = DigitalInOut(board.D6)
+receiving_pin_1.direction = Direction.INPUT
+receiving_pin_1.pull = Pull.DOWN   # Ensures it reads LOW when not connected
 
 
-elif board_id == 2:
+# Connection with board 3
+signal_pin_2 = DigitalInOut(board.D9)
+signal_pin_2.direction = Direction.OUTPUT
 
-    # Connection with board 1
-    signal_pin_2_to_1 = DigitalInOut(board.D5)
-    signal_pin_2_to_1.direction = Direction.OUTPUT
-
-    receiving_pin_2_from_1 = DigitalInOut(board.D6)
-    receiving_pin_2_from_1.direction = Direction.INPUT
-    receiving_pin_2_from_1.pull = Pull.DOWN  # Ensures it reads LOW when not connected
-
-
-    # Connection with board 3
-    signal_pin_2_to_3 = DigitalInOut(board.D9)
-    signal_pin_2_to_3.direction = Direction.OUTPUT
-
-    receiving_pin_2_from_3 = DigitalInOut(board.D10)
-    receiving_pin_2_from_3.direction = Direction.INPUT
-    receiving_pin_2_from_3.pull = Pull.DOWN  # Ensures it reads LOW when not connected
-
-
-elif board_id == 3:
-
-    # Connection with board 1
-    signal_pin_3_to_1 = DigitalInOut(board.D5)
-    signal_pin_3_to_1.direction = Direction.OUTPUT
-
-    receiving_pin_3_from_1 = DigitalInOut(board.D6)
-    receiving_pin_3_from_1.direction = Direction.INPUT
-    receiving_pin_3_from_1.pull = Pull.DOWN  # Ensures it reads LOW when not connected
-
-    # Connection with board 2
-    signal_pin_3_to_2 = DigitalInOut(board.D9)
-    signal_pin_3_to_2.direction = Direction.OUTPUT
-
-    receiving_pin_3_from_2 = DigitalInOut(board.D10)
-    receiving_pin_3_from_2.direction = Direction.INPUT
-    receiving_pin_3_from_2.pull = Pull.DOWN  # Ensures it reads LOW when not connected
+receiving_pin_2 = DigitalInOut(board.D10)
+receiving_pin_2.direction = Direction.INPUT
+receiving_pin_2.pull = Pull.DOWN   # Ensures it reads LOW when not connected
 
 # ------------------------------------------------------------- #
 # ------------------------------------------------------------- #
@@ -153,18 +109,20 @@ cooldown = 2  # This will let some audios play over and over again seemingly.
 global_volume = 0.7
 
 
-while True:
-    # Print ultrasonic sensor values.
-    # Get distance.
-    try:
+# --- 
+# TIME RELATED VARIABLES #
+# ----
 
-        if board_id == 2:
-            if receiving_pin_2_from_1.value:
-                # Send this to neopixel!
-                pixels.fill((255, 255, 255))
-            else:
-                # No signal :(
-                pixels.fill((0, 0, 0))
+trigger_time = 10        # Seconds required.
+start_time = 0           # The timer will start with 0 seconds.
+start_timer = False      # This will help start the countdown of the seconds.
+glitching_state = False  # For the glitching effect.
+ 
+
+# STARTING THE CODE!!!
+
+while True:
+    try:
 
         # --- Get values ----- #
         voltage = get_voltage(photoresistor)
@@ -173,44 +131,102 @@ while True:
         print(f"Distance: {distance:.2f} cm")
         
         sound = beep # Play beep sound.
+        
+
+        # -------------- Light show! --------------------
+
+        # Although lets first check if I am receiving some energy output in order to synchronize...abs
+        if receiving_pin_1.value or receiving_pin_2.value:
+            glitching_state = True
+        else:
+            glitching_state = False
+
+        if distance > 0 and distance < 10:
+            if glitching_state == False:
+                # After the glitching state condition has been evaluated, and this is not the one that is on a glitching state, 
+                # start the timer to create the effect.
+                if not start_timer:
+                    start_time = time.monotonic()
+                    start_timer = True
+                
+                # Since this is not the one in a glitching state, it will keep track of the seconds until it reaches 10 seconds, where it will
+                # "Synchronize" the rest of the boards.
+
+                elapsed = time.monotonic() - start_time
+                print("Seconds in range:", round(elapsed, 2))
+
+                if elapsed >= 10:
+                    # I will synchronize EVERYONE!
+                    signal_pin_1.value = True
+                    signal_pin_2.value = True
+                elif elapsed <= 10:
+                    signal_pin_1.value = False
+                    signal_pin_2.value = False
+
+                # Make sound
+                global_volume = 1.0
+                cooldown = 0.3
+
+                if sound:
+                    now = time.monotonic()
+                    # Play sound if there is a new audio file and the cooldown has finished.
+                if sound != last_played or now - last_play_time > cooldown:
+                    mixer.voice[0].play(sound, loop=False)
+                    mixer.voice[0].level = global_volume
+                    last_played = sound
+                    last_play_time = now
+                
+                # White, to show the other ones as affected.
+                pixels.fill((255, 255, 255))
+
+            elif glitching_state == True:
+                pixels.fill((255, 255, 0)) # Testing connection.
+            
+        elif distance >= 11 and glitching_state == False:
+            pixels.fill((255, 255, 255))
+
+        elif distance >= 11 and glitching_state == True:
+            pixels.fill((255, 255, 0)) # Testing connection.        
+
+
+        # -----------------------------------------------
 
 
         # This is just for testing, but I am going to check if the three devices work correctly and do not present any interference.
-        
-        if testing_mode == 1:
+        """ if testing_mode == 1:
       
             if distance > 40:
                 global_volume = 1.0
                 if board_id == 1:
-                    signal_pin_1_to_2.value = False
+                    signal_pin_1.value = False
 
                 cooldown = 1.0
                 
             elif distance > 30:
                 global_volume = 1.00
                 if board_id == 1:
-                    signal_pin_1_to_2.value = False
+                    signal_pin_1.value = False
 
                 cooldown = 0.8
 
             elif distance > 20:
                 global_volume = 1.00
                 if board_id == 1:
-                    signal_pin_1_to_2.value = False
+                    signal_pin_1.value = False
 
                 cooldown = 0.5
 
             elif distance > 10:
                 global_volume = 1.00
                 if board_id == 1:
-                    signal_pin_1_to_2.value = False
+                    signal_pin_1.value = False
 
                 cooldown = 0.3
             
             elif distance > 0:
                 global_volume = 1.00
                 if board_id == 1:
-                    signal_pin_1_to_2.value = False
+                    signal_pin_1.value = False
 
                 cooldown = 0.1            
 
@@ -222,7 +238,7 @@ while True:
                 mixer.voice[0].play(sound, loop=False)
                 mixer.voice[0].level = global_volume
                 last_played = sound
-                last_play_time = now
+                last_play_time = now """
 
     except RuntimeError:
         # Sometimes a reading may fail due to timeout.
