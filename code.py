@@ -19,6 +19,10 @@ import adafruit_hcsr04  # We need this to get the ultrasonic sensor working.
 ### WHICH BOARD IS THIS? #####
 ##############################
 
+# Distance testing mode
+
+testing_mode = 1
+
 # The project follows the following scheme:
 
 #     1
@@ -28,23 +32,30 @@ import adafruit_hcsr04  # We need this to get the ultrasonic sensor working.
 # So please assign the board number here:
 board_id = 1
 
+# Level of intensity
+level_intensity = 0  # Starts at 0. There are 3 levels of intensity, the first one
+                     # is where the main structure glitches and the rest stay quiet.
+                     # On the second level, 
 
 # Ok now that I know which board I am, I will now prepared the inputs and outputs:
 
 #ChatGPT helped me a bit here in these parts for the input and output using the Analogue connections.
 if board_id == 1:
-    signal_pin1 = DigitalInOut(board.D5)
-    signal_pin1.direction = Direction.OUTPUT
+    signal_pin_1_to_2 = DigitalInOut(board.D5)
+    signal_pin_1_to_2.direction = Direction.OUTPUT
 
-    receiving_pin1 = DigitalInOut(board.D6)
-    receiving_pin1.direction = Direction.INPUT
-    receiving_pin1.pull = Pull.DOWN   # Ensures it reads LOW when not connected
+    receiving_pin_1_from_2 = DigitalInOut(board.D6)
+    receiving_pin_1_from_2.direction = Direction.INPUT
+    receiving_pin_1_from_2.pull = Pull.DOWN   # Ensures it reads LOW when not connected
 
 
 elif board_id == 2:
-    receiving_pin2 = DigitalInOut(board.D6)
-    receiving_pin2.direction = Direction.INPUT
-    receiving_pin2.pull = Pull.DOWN  # Ensures it reads LOW when not connected
+    signal_pin_2_to_1 = DigitalInOut(board.D5)
+    signal_pin_2_to_1.direction = Direction.OUTPUT
+
+    receiving_pin_2_from_1 = DigitalInOut(board.D6)
+    receiving_pin_2_from_1.direction = Direction.INPUT
+    receiving_pin_2_from_1.pull = Pull.DOWN  # Ensures it reads LOW when not connected
 
 
 # ------------------------------------------------------------- #
@@ -108,7 +119,7 @@ while True:
     try:
 
         if board_id == 2:
-            if receiving_pin2.value:
+            if receiving_pin_2_from_1.value:
                 # Send this to neopixel!
                 pixels.fill((255, 255, 255))
             else:
@@ -121,56 +132,57 @@ while True:
         print("Photoresistor voltage:", round(voltage, 3))
         print(f"Distance: {distance:.2f} cm")
         
-        sound = beep # Play beep sound.if
+        sound = beep # Play beep sound.
 
 
         # This is just for testing, but I am going to check if the three devices work correctly and do not present any interference.
         
-              
-        if distance > 40:
-            global_volume = 1.0
-            if board_id == 1:
-                signal_pin1.value = False
+        if testing_mode == 1:
+      
+            if distance > 40:
+                global_volume = 1.0
+                if board_id == 1:
+                    signal_pin_1_to_2.value = False
 
-            cooldown = 1.0
+                cooldown = 1.0
+                
+            elif distance > 30:
+                global_volume = 1.00
+                if board_id == 1:
+                    signal_pin_1_to_2.value = False
+
+                cooldown = 0.8
+
+            elif distance > 20:
+                global_volume = 1.00
+                if board_id == 1:
+                    signal_pin_1_to_2.value = False
+
+                cooldown = 0.5
+
+            elif distance > 10:
+                global_volume = 1.00
+                if board_id == 1:
+                    signal_pin_1_to_2.value = False
+
+                cooldown = 0.3
             
-        elif distance > 30:
-            global_volume = 1.00
-            if board_id == 1:
-                signal_pin1.value = False
+            elif distance > 0:
+                global_volume = 1.00
+                if board_id == 1:
+                    signal_pin_1_to_2.value = False
 
-            cooldown = 0.8
+                cooldown = 0.1            
 
-        elif distance > 20:
-            global_volume = 1.00
-            if board_id == 1:
-                signal_pin1.value = False
-
-            cooldown = 0.5
-
-        elif distance > 10:
-            global_volume = 1.00
-            if board_id == 1:
-                signal_pin1.value = False
-
-            cooldown = 0.3
-        
-        elif distance > 0:
-            global_volume = 1.00
-            if board_id == 1:
-                signal_pin1.value = True
-
-            cooldown = 0.1            
-
-  
-        if sound:
-            now = time.monotonic()
-            # Play sound if there is a new audio file and the cooldown has finished.
-        if sound != last_played or now - last_play_time > cooldown:
-            mixer.voice[0].play(sound, loop=False)
-            mixer.voice[0].level = global_volume
-            last_played = sound
-            last_play_time = now
+    
+            if sound:
+                now = time.monotonic()
+                # Play sound if there is a new audio file and the cooldown has finished.
+            if sound != last_played or now - last_play_time > cooldown:
+                mixer.voice[0].play(sound, loop=False)
+                mixer.voice[0].level = global_volume
+                last_played = sound
+                last_play_time = now
 
     except RuntimeError:
         # Sometimes a reading may fail due to timeout.
