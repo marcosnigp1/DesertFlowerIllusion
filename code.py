@@ -54,6 +54,7 @@ receiving_pin_2 = DigitalInOut(board.D10)
 receiving_pin_2.direction = Direction.INPUT
 receiving_pin_2.pull = Pull.DOWN   # Ensures it reads LOW when not connected
 
+
 # ------------------------------------------------------------- #
 # ------------------------------------------------------------- #
 # ------------------------------------------------------------- #
@@ -119,11 +120,16 @@ start_timer = False      # This will help start the countdown of the seconds.
 glitching_state = False  # For the glitching effect.
  
 
+# -----
+# You shall not pass!!!
+# -----
+
+you_shall_not_pass = False
+
 # STARTING THE CODE!!!
 
 while True:
     try:
-
         # --- Get values ----- #
         voltage = get_voltage(photoresistor)
         distance = ultrasonic.distance  # In cm
@@ -136,7 +142,7 @@ while True:
         # -------------- Light show! --------------------
 
         # Although lets first check if I am receiving some energy output in order to synchronize...abs
-        if receiving_pin_1.value or receiving_pin_2.value:
+        if (receiving_pin_1.value == True or receiving_pin_2.value == True) and you_shall_not_pass == False:
             glitching_state = True
         else:
             glitching_state = False
@@ -155,13 +161,17 @@ while True:
                 elapsed = time.monotonic() - start_time
                 print("Seconds in range:", round(elapsed, 2))
 
-                if elapsed >= 10:
+                if elapsed >= 5:
                     # I will synchronize EVERYONE!
                     signal_pin_1.value = True
                     signal_pin_2.value = True
-                elif elapsed <= 10:
+                    you_shall_not_pass = True # DO NOT MAKE ME YELLOW AAAA
+                    # signal_pin_2.value = True
+                elif elapsed <= 5:
                     signal_pin_1.value = False
                     signal_pin_2.value = False
+                    you_shall_not_pass = False # DO NOT MAKE ME YELLOW AAAA
+                    # signal_pin_2.value = False
 
                 # Make sound
                 global_volume = 1.0
@@ -184,9 +194,15 @@ while True:
             
         elif distance >= 11 and glitching_state == False:
             pixels.fill((255, 255, 255))
+            # The person has moved away
+            start_timer = False
+            you_shall_not_pass = False
+            signal_pin_1.value = False
+            signal_pin_2.value = False
 
         elif distance >= 11 and glitching_state == True:
-            pixels.fill((255, 255, 0)) # Testing connection.        
+            pixels.fill((255, 255, 0)) # Testing connection.
+
 
 
         # -----------------------------------------------
