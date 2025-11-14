@@ -70,7 +70,7 @@ def get_voltage(pin):
 
 # Neopixel setup:
 neopixel_pin = board.EXTERNAL_NEOPIXELS  # External Neopixel pin
-num_pixels = 12
+num_pixels = 150
 pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=0.8, auto_write=True)
 
 
@@ -147,50 +147,68 @@ while True:
         else:
             glitching_state = False
 
-        if distance > 0 and distance < 10:
-            if glitching_state == False:
-                # After the glitching state condition has been evaluated, and this is not the one that is on a glitching state, 
-                # start the timer to create the effect.
-                if not start_timer:
-                    start_time = time.monotonic()
-                    start_timer = True
+        if (distance > 0 and distance < 10) and glitching_state == False:
+            # After the glitching state condition has been evaluated, and this is not the one that is on a glitching state, 
+            # start the timer to create the effect.
+            if not start_timer:
+                start_time = time.monotonic()
+                start_timer = True
+            
+            # Since this is not the one in a glitching state, it will keep track of the seconds until it reaches 10 seconds, where it will
+            # "Synchronize" the rest of the boards.
+
+            elapsed = time.monotonic() - start_time
+            print("Seconds in range:", round(elapsed, 2))
+
+            if elapsed >= 10:
+                # I will synchronize EVERYONE!
+                signal_pin_1.value = True
+                signal_pin_2.value = True
+                you_shall_not_pass = True # DO NOT MAKE ME YELLOW AAAA
+                # signal_pin_2.value = True
+            elif elapsed <= 10:
+                signal_pin_1.value = False
+                signal_pin_2.value = False
+                you_shall_not_pass = False # DO NOT MAKE ME YELLOW AAAA
+                # signal_pin_2.value = False
+
+            # Make sound
+            global_volume = 1.0
+            cooldown = 0.3
+
+            if sound:
+                now = time.monotonic()
+                # Play sound if there is a new audio file and the cooldown has finished.
+            if sound != last_played or now - last_play_time > cooldown:
+                mixer.voice[0].play(sound, loop=False)
+                mixer.voice[0].level = global_volume
+                last_played = sound
+                last_play_time = now
+            
+            # White, to show the other ones as affected.
+            if elapsed >= 3 and elapsed <= 9:
+                for i in range(0,225):
+                    pixels.fill((255-int(i), 255-int(i), 255-int(i)))
+            
+            elif elapsed >= 10:
+                    pixels.fill((30, 255, 255))
+                    pixels.fill((255, 30, 30))
+
+        # Then what is this code for?....
+            """             elif glitching_state == True:
+            if not start_timer:
+                start_time = time.monotonic()
+                start_timer = True
                 
-                # Since this is not the one in a glitching state, it will keep track of the seconds until it reaches 10 seconds, where it will
-                # "Synchronize" the rest of the boards.
+            elapsed = time.monotonic() - start_time
 
-                elapsed = time.monotonic() - start_time
-                print("Seconds in range:", round(elapsed, 2))
-
-                if elapsed >= 5:
-                    # I will synchronize EVERYONE!
-                    signal_pin_1.value = True
-                    signal_pin_2.value = True
-                    you_shall_not_pass = True # DO NOT MAKE ME YELLOW AAAA
-                    # signal_pin_2.value = True
-                elif elapsed <= 5:
-                    signal_pin_1.value = False
-                    signal_pin_2.value = False
-                    you_shall_not_pass = False # DO NOT MAKE ME YELLOW AAAA
-                    # signal_pin_2.value = False
-
-                # Make sound
-                global_volume = 1.0
-                cooldown = 0.3
-
-                if sound:
-                    now = time.monotonic()
-                    # Play sound if there is a new audio file and the cooldown has finished.
-                if sound != last_played or now - last_play_time > cooldown:
-                    mixer.voice[0].play(sound, loop=False)
-                    mixer.voice[0].level = global_volume
-                    last_played = sound
-                    last_play_time = now
-                
-                # White, to show the other ones as affected.
-                pixels.fill((255, 255, 255))
-
-            elif glitching_state == True:
-                pixels.fill((255, 255, 0)) # Testing connection.
+            if elapsed >= 3 and elapsed <= 10:
+                for i in range(0,225):
+                    pixels.fill((255-int(i), 255-int(i), 255-int(i)))
+            
+            elif elapsed >= 11:
+                    pixels.fill((30, 255, 255))
+                    pixels.fill((255, 30, 30)) """
             
         elif distance >= 11 and glitching_state == False:
             pixels.fill((255, 255, 255))
@@ -199,9 +217,21 @@ while True:
             you_shall_not_pass = False
             signal_pin_1.value = False
             signal_pin_2.value = False
+        
+        elif distance >= 0 and glitching_state == True:
+            if not start_timer:
+                start_time = time.monotonic()
+                start_timer = True
+                
+            elapsed = time.monotonic() - start_time
 
-        elif distance >= 11 and glitching_state == True:
-            pixels.fill((255, 255, 0)) # Testing connection.
+            if elapsed >= 3 and elapsed <= 10:
+                for i in range(0,225):
+                    pixels.fill((255-int(i), 255-int(i), 255-int(i)))
+                
+            elif elapsed >= 11:
+                    pixels.fill((30, 255, 255))
+                    pixels.fill((255, 30, 30))
 
 
 
