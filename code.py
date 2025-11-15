@@ -70,8 +70,8 @@ def get_voltage(pin):
 
 # Neopixel setup:
 neopixel_pin = board.EXTERNAL_NEOPIXELS  # External Neopixel pin
-num_pixels = 150
-pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=0.8, auto_write=True)
+num_pixels = 170 # 170 pixels per structure.
+pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=0.8, pixel_order=neopixel.GRBW ,auto_write=True) # Added pixel_order=neopixel.GRBW to properly display the colors with neopixel.fill((R,G,B)) 
 
 
 # Enable external power pin for the Speaker.
@@ -188,7 +188,7 @@ while True:
             # White, to show the other ones as affected.
             if elapsed >= 3 and elapsed <= 9:
                 for i in range(0,225):
-                    pixels.fill((255-int(i), 255-int(i), 255-int(i)))
+                    pixels.fill((255-int(i), 0, 0))
             
             elif elapsed >= 10:
                     pixels.fill((30, 255, 255))
@@ -211,7 +211,7 @@ while True:
                     pixels.fill((255, 30, 30)) """
             
         elif distance >= 11 and glitching_state == False:
-            pixels.fill((255, 255, 255))
+            pixels.fill((255, 0, 0))
             # The person has moved away
             start_timer = False
             you_shall_not_pass = False
