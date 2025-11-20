@@ -71,8 +71,8 @@ def get_voltage(pin):
 # Neopixel setup:
 neopixel_pin = board.EXTERNAL_NEOPIXELS  # External Neopixel pin
 num_pixels = 170 # 170 pixels per structure.
-pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=0.8, pixel_order=neopixel.GRBW ,auto_write=True) # Added pixel_order=neopixel.GRBW to properly display the colors with neopixel.fill((R,G,B)) 
-
+pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=1.0, auto_write=True) # Added pixel_order=neopixel.GRBW to properly display the colors with neopixel.fill((R,G,B)) 
+                                                                                      # This was needed before, not now.
 
 # Enable external power pin for the Speaker.
 external_power = DigitalInOut(board.EXTERNAL_POWER)
