@@ -70,9 +70,9 @@ def get_voltage(pin):
 
 # Neopixel setup:
 neopixel_pin = board.EXTERNAL_NEOPIXELS  # External Neopixel pin
-num_pixels = 170 # 170 pixels per structure.
-pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=1.0, auto_write=True) # Added pixel_order=neopixel.GRBW to properly display the colors with neopixel.fill((R,G,B)) 
-                                                                                      # This was needed before, not now.
+num_pixels = 60 # 170 pixels per structure.
+pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=1, auto_write=True)# Added pixel_order=neopixel.GRBW to properly display the colors with neopixel.fill((R,G,B)) 
+                                                                                                                # This was needed before, not now.
 
 # Enable external power pin for the Speaker.
 external_power = DigitalInOut(board.EXTERNAL_POWER)
@@ -87,18 +87,34 @@ ultrasonic = adafruit_hcsr04.HCSR04(trigger_pin=board.SDA, echo_pin=board.SCL)
 # Mixer Options
 mixer = audiomixer.Mixer(
     voice_count=1,
-    sample_rate=22050,
+    sample_rate=16000,
     channel_count=1,
-    bits_per_sample=16,
-    samples_signed=True,
+    bits_per_sample=8,
+    samples_signed=False,
 )
 audio = audiobusio.I2SOut(board.I2S_BIT_CLOCK, board.I2S_WORD_SELECT, board.I2S_DATA)
 audio.play(mixer)
 
 # ----- AUDIO FILES ---------#
-audio_file = open("media/testingbeep.wav", "rb") # https://pixabay.com/sound-effects/beep-313342/
-beep = audiocore.WaveFile(audio_file)
 
+audio_file0 = open("media/noGlitch.wav", "rb") # https://freesound.org/s/535934/
+noglitch_audio = audiocore.WaveFile(audio_file0)
+
+# Level 1 Glitching
+audio_file1 = open("media/level1glitch.wav", "rb") # https://freesound.org/s/535934/
+level1glitch_audio = audiocore.WaveFile(audio_file1)
+
+# Level 2 Glitching
+audio_file2 = open("media/level2glitch.wav", "rb") # https://freesound.org/s/820020/
+level2glitch_audio = audiocore.WaveFile(audio_file2)
+
+# Level 3 Glitching
+audio_file3 = open("media/level3glitch.wav", "rb") # https://freesound.org/s/820020/
+level3glitch_audio = audiocore.WaveFile(audio_file3)
+
+# Beeping sound.
+audio_file4 = open("media/testingbeep.wav", "rb") # https://pixabay.com/sound-effects/beep-313342/
+beep = audiocore.WaveFile(audio_file4)
 
 # ---- Last sound variable (to store and compare files) ---#
 last_play_time = 0
@@ -107,7 +123,7 @@ cooldown = 2  # This will let some audios play over and over again seemingly.
 
 # ------
 #  GLOBAL VOLUME ---- #
-global_volume = 0.7
+global_volume = 1.0
 
 
 # --- 
@@ -136,7 +152,7 @@ while True:
         print("Photoresistor voltage:", round(voltage, 3))
         print(f"Distance: {distance:.2f} cm")
         
-        sound = beep # Play beep sound.
+        sound = noglitch_audio # Load the no glitch audio to play later.
         
 
         # -------------- Light show! --------------------
@@ -160,21 +176,34 @@ while True:
             elapsed = time.monotonic() - start_time
             print("Seconds in range:", round(elapsed, 2))
 
-            if elapsed >= 10:
+            if elapsed >= 16:
+                # Load the glitching level 1 audio.
+                sound = level3glitch_audio
+
                 # I will synchronize EVERYONE!
                 signal_pin_1.value = True
                 signal_pin_2.value = True
-                you_shall_not_pass = True # DO NOT MAKE ME YELLOW AAAA
-                # signal_pin_2.value = True
+                you_shall_not_pass = True # Do not override main circuit.
+            
+            elif elapsed >= 10 and elapsed <= 16:
+                sound = level2glitch_audio
+
+                # I will synchronize EVERYONE!
+                signal_pin_1.value = True
+                signal_pin_2.value = True
+                you_shall_not_pass = True 
+            
             elif elapsed <= 10:
+                # Load the glitching level 1 audio.
+                sound = level1glitch_audio
+
                 signal_pin_1.value = False
                 signal_pin_2.value = False
-                you_shall_not_pass = False # DO NOT MAKE ME YELLOW AAAA
-                # signal_pin_2.value = False
+                you_shall_not_pass = False 
 
             # Make sound
             global_volume = 1.0
-            cooldown = 0.3
+            cooldown = 0.0  # Cooldown has to be 0 preferably to avoid a silence gap.
 
             if sound:
                 now = time.monotonic()
@@ -188,11 +217,25 @@ while True:
             # White, to show the other ones as affected.
             if elapsed >= 3 and elapsed <= 9:
                 for i in range(0,225):
-                    pixels.fill((255-int(i), 0, 0))
+                    pixels.fill((200-int(i), 200-int(i), 0))
             
-            elif elapsed >= 10:
+            elif elapsed >= 10 and elapsed <= 16:
+                    pixels.fill((30, 255, 255))
+                    pixels.fill((30, 255, 255))
+                    pixels.fill((30, 255, 255))
+                    pixels.fill((30, 255, 255))
+                    pixels.fill((30, 255, 255))
                     pixels.fill((30, 255, 255))
                     pixels.fill((255, 30, 30))
+                    pixels.fill((255, 30, 30))
+                    pixels.fill((255, 30, 30))
+                    pixels.fill((255, 30, 30))
+                    pixels.fill((255, 30, 30))
+                    pixels.fill((255, 30, 30))
+            
+            elif elapsed >= 17:
+                pixels.fill((30, 255, 255))
+                pixels.fill((255, 30, 30))
 
         # Then what is this code for?....
             """             elif glitching_state == True:
@@ -211,12 +254,25 @@ while True:
                     pixels.fill((255, 30, 30)) """
             
         elif distance >= 11 and glitching_state == False:
-            pixels.fill((255, 0, 0))
+            pixels.fill((200, 200, 0))
             # The person has moved away
             start_timer = False
             you_shall_not_pass = False
             signal_pin_1.value = False
             signal_pin_2.value = False
+
+            # Make sound
+            global_volume = 1.0
+            cooldown = 0.0  # Cooldown has to be 0 preferably to avoid a silence gap.
+
+            if sound:
+                now = time.monotonic()
+                # Play sound if there is a new audio file and the cooldown has finished.
+            if sound != last_played or now - last_play_time > cooldown:
+                mixer.voice[0].play(sound, loop=False)
+                mixer.voice[0].level = global_volume
+                last_played = sound
+                last_play_time = now
         
         elif distance >= 0 and glitching_state == True:
             if not start_timer:
@@ -226,13 +282,43 @@ while True:
             elapsed = time.monotonic() - start_time
 
             if elapsed >= 3 and elapsed <= 10:
+                sound = level1glitch_audio
                 for i in range(0,225):
-                    pixels.fill((255-int(i), 255-int(i), 255-int(i)))
+                    pixels.fill((255-int(i), 255-int(i), 0))
                 
-            elif elapsed >= 11:
-                    pixels.fill((30, 255, 255))
-                    pixels.fill((255, 30, 30))
+            elif elapsed >= 11 and elapsed <= 16:
+                sound = level2glitch_audio
+                pixels.fill((30, 255, 255))
+                pixels.fill((30, 255, 255))
+                pixels.fill((30, 255, 255))
+                pixels.fill((30, 255, 255))
+                pixels.fill((30, 255, 255))
+                pixels.fill((30, 255, 255))
+                pixels.fill((255, 30, 30))
+                pixels.fill((255, 30, 30))
+                pixels.fill((255, 30, 30))
+                pixels.fill((255, 30, 30))
+                pixels.fill((255, 30, 30))
+                pixels.fill((255, 30, 30))
 
+            elif elapsed >= 17:
+                sound = level3glitch_audio
+                pixels.fill((30, 255, 255))
+                pixels.fill((255, 30, 30))
+            
+
+            # Make sound
+            global_volume = 1.0
+            cooldown = 0.0  # Cooldown has to be 0 preferably to avoid a silence gap.
+
+            if sound:
+                now = time.monotonic()
+                # Play sound if there is a new audio file and the cooldown has finished.
+            if sound != last_played or now - last_play_time > cooldown:
+                mixer.voice[0].play(sound, loop=False)
+                mixer.voice[0].level = global_volume
+                last_played = sound
+                last_play_time = now
 
 
         # -----------------------------------------------
