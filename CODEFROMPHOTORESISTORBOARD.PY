@@ -147,7 +147,7 @@ you_shall_not_pass = False
 # Am I the photoresistor?
 # ----
 
-this_photoresistor = False
+this_photoresistor = True
 we_can_light = False
 
 # STARTING THE CODE!!!
@@ -165,11 +165,11 @@ while True:
         # Check if this is the board with the photoresistor.
 
         if this_photoresistor == True:
-            if voltage <= 0.15:
+            if voltage <= 0.25:
                 signal_pin_1.value = True
                 signal_pin_2.value = True
-                we_can_light = True
                 this_photoresistor = False
+                we_can_light = True
 
         # Once the voltage is received after the photoresistor confirms there is light, turn everyone up.
         if (receiving_pin_1.value == True or receiving_pin_2.value == True) and this_photoresistor == False:
@@ -239,7 +239,7 @@ while True:
                 
                 # White, to show the other ones as affected.
                 if elapsed >= 3 and elapsed <= 9:
-                    for i in range(0,40):
+                    for i in range(0,20):
                         pixels.fill((255-int(i), 100-int(i), 0))
                 
                 elif elapsed >= 10 and elapsed <= 16:
@@ -325,7 +325,7 @@ while True:
 
                 if elapsed >= 1 and elapsed <= 10:
                     sound = level1glitch_audio
-                    for i in range(0,40):
+                    for i in range(0,30):
                         pixels.fill((255-int(i), 100-int(i), 0))
                     
                 elif elapsed >= 11 and elapsed <= 16:
