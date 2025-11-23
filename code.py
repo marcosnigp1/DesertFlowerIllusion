@@ -71,7 +71,7 @@ def get_voltage(pin):
 # Neopixel setup:
 neopixel_pin = board.EXTERNAL_NEOPIXELS  # External Neopixel pin
 num_pixels = 60 # 170 pixels per structure.
-pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=1, auto_write=True)# Added pixel_order=neopixel.GRBW to properly display the colors with neopixel.fill((R,G,B)) 
+pixels = neopixel.NeoPixel(neopixel_pin, num_pixels, brightness=1, pixel_order=neopixel.GRBW, auto_write=True)# Added pixel_order=neopixel.GRBW to properly display the colors with neopixel.fill((R,G,B)) 
                                                                                                                 # This was needed before, not now.
 
 # Enable external power pin for the Speaker.
@@ -178,7 +178,7 @@ while True:
 
             if elapsed >= 16:
                 # Load the glitching level 1 audio.
-                sound = level3glitch_audio
+                # sound = level3glitch_audio
 
                 # I will synchronize EVERYONE!
                 signal_pin_1.value = True
@@ -203,7 +203,7 @@ while True:
 
             # Make sound
             global_volume = 1.0
-            cooldown = 0.0  # Cooldown has to be 0 preferably to avoid a silence gap.
+            cooldown = 10.0  # Cooldown has to be 0 preferably to avoid a silence gap.
 
             if sound:
                 now = time.monotonic()
@@ -216,26 +216,43 @@ while True:
             
             # White, to show the other ones as affected.
             if elapsed >= 3 and elapsed <= 9:
-                for i in range(0,225):
-                    pixels.fill((200-int(i), 200-int(i), 0))
+                for i in range(0,50):
+                    pixels.fill((255-int(i), 100-int(i), 0))
             
             elif elapsed >= 10 and elapsed <= 16:
-                    pixels.fill((30, 255, 255))
-                    pixels.fill((30, 255, 255))
-                    pixels.fill((30, 255, 255))
-                    pixels.fill((30, 255, 255))
-                    pixels.fill((30, 255, 255))
-                    pixels.fill((30, 255, 255))
-                    pixels.fill((255, 30, 30))
-                    pixels.fill((255, 30, 30))
-                    pixels.fill((255, 30, 30))
-                    pixels.fill((255, 30, 30))
-                    pixels.fill((255, 30, 30))
-                    pixels.fill((255, 30, 30))
-            
-            elif elapsed >= 17:
+
+                pixels.fill((30, 255, 255))
+                pixels.fill((30, 255, 255))
+                pixels.fill((30, 255, 255))
                 pixels.fill((30, 255, 255))
                 pixels.fill((255, 30, 30))
+                pixels.fill((255, 30, 30))
+                pixels.fill((255, 30, 30))
+                pixels.fill((255, 30, 30))
+                    
+            elif elapsed >= 17:
+
+                # ---- #
+                pixels.fill((45, 255, 255))
+                pixels.fill((45, 255, 255))
+                pixels.fill((45, 255, 255))
+                pixels.fill((45, 255, 255))
+                pixels.fill((45, 255, 255))
+                pixels.fill((45, 255, 255))
+                pixels.fill((45, 255, 255))
+                pixels.fill((45, 255, 255))
+                pixels.fill((45, 255, 255))
+                pixels.fill((255, 45, 45))
+                pixels.fill((255, 45, 45))
+                pixels.fill((255, 45, 45))
+                pixels.fill((255, 45, 45))
+                pixels.fill((255, 45, 45))
+                pixels.fill((255, 45, 45))
+                pixels.fill((255, 45, 45))
+                pixels.fill((255, 45, 45))
+                pixels.fill((255, 45, 45))
+                # ---- #
+                
 
         # Then what is this code for?....
             """             elif glitching_state == True:
@@ -254,7 +271,7 @@ while True:
                     pixels.fill((255, 30, 30)) """
             
         elif distance >= 11 and glitching_state == False:
-            pixels.fill((200, 200, 0))
+            pixels.fill((255, 100, 0))
             # The person has moved away
             start_timer = False
             you_shall_not_pass = False
@@ -263,7 +280,7 @@ while True:
 
             # Make sound
             global_volume = 1.0
-            cooldown = 0.0  # Cooldown has to be 0 preferably to avoid a silence gap.
+            cooldown = 10.0  # Cooldown has to be 0 preferably to avoid a silence gap.
 
             if sound:
                 now = time.monotonic()
@@ -284,7 +301,7 @@ while True:
             if elapsed >= 3 and elapsed <= 10:
                 sound = level1glitch_audio
                 for i in range(0,225):
-                    pixels.fill((255-int(i), 255-int(i), 0))
+                    pixels.fill((255-int(i), 100-int(i), 0))
                 
             elif elapsed >= 11 and elapsed <= 16:
                 sound = level2glitch_audio
@@ -309,7 +326,7 @@ while True:
 
             # Make sound
             global_volume = 1.0
-            cooldown = 0.0  # Cooldown has to be 0 preferably to avoid a silence gap.
+            cooldown = 10.0  # Cooldown has to be 0 preferably to avoid a silence gap.
 
             if sound:
                 now = time.monotonic()
