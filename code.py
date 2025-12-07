@@ -127,7 +127,7 @@ cooldown = 2  # This will let some audios play over and over again seemingly.
 
 # ------
 #  GLOBAL VOLUME ---- #
-global_volume = 0.5
+global_volume = 0.8
 
 
 # ---
@@ -158,6 +158,14 @@ we_can_light = False
 
 # Globally deactivate photoresistor mode.
 photoresistor_mode = False
+
+# ---------------------------------------------------
+
+# ---------
+# Phases for the light.
+# --------
+
+phase_light = 0   #0 == Nothing, 1 == Phase 1, etc... There are supposed to be 3 phases.
 
 while True:
     try:
@@ -199,7 +207,8 @@ while True:
             else:
                 glitching_state = False
 
-            if (distance > 0 and distance < 68) and glitching_state == False:
+            if (distance > 0 and distance < 69) and glitching_state == False:
+                global_volume = 0.8
                 # After the glitching state condition has been evaluated, and this is not the one that is on a glitching state,
                 # start the timer to create the effect.
                 if not start_timer:
@@ -255,10 +264,12 @@ while True:
 
                 # White, to show the other ones as affected.
                 if elapsed >= 3 and elapsed <= 9:
+                    phase_light = 1
                     for i in range(0, 40):
                         pixels.fill((255 - int(i), 100 - int(i), 0))  # Dimming effect.
 
                 elif elapsed >= 10 and elapsed <= 16:
+                    phase_light = 2
                     # ---- #
                     pixels.fill((30, 255, 255))
                     pixels.fill((30, 255, 255))
@@ -271,6 +282,7 @@ while True:
                     # ---- #
 
                 elif elapsed >= 17:
+                    phase_light = 3
                     # ---- #
                     pixels.fill((45, 255, 255))
                     pixels.fill((45, 255, 255))
@@ -293,27 +305,105 @@ while True:
                     # ---- #
 
             elif distance >= 69 and glitching_state == False:
-                pixels.fill((255, 100, 0))
-                # The person has moved away
-                start_timer = False
-                you_shall_not_pass = False
-                signal_pin_1.value = False
-                signal_pin_2.value = False
+                if phase_light == 0:
+                    pixels.fill((255, 100, 0))
+                    # The person has moved away
+                    start_timer = False
+                    you_shall_not_pass = False
+                    signal_pin_1.value = False
+                    signal_pin_2.value = False
 
-                # Make sound
-                # global_volume = 1.0
-                cooldown = (
-                    20.0  # Cooldown has to be 0 preferably to avoid a silence gap.
-                )
+                    # Make sound
+                    # global_volume = 1.0
+                    cooldown = (
+                        20.0  # Cooldown has to be 0 preferably to avoid a silence gap.
+                    )
 
-                if sound:
-                    now = time.monotonic()
-                    # Play sound if there is a new audio file and the cooldown has finished.
-                if sound != last_played or now - last_play_time > cooldown:
-                    mixer.voice[0].play(sound, loop=True)
-                    mixer.voice[0].level = global_volume
-                    last_played = sound
-                    last_play_time = now
+                    if sound:
+                        now = time.monotonic()
+                        # Play sound if there is a new audio file and the cooldown has finished.
+                    if sound != last_played or now - last_play_time > cooldown:
+                        mixer.voice[0].play(sound, loop=True)
+                        mixer.voice[0].level = global_volume
+                        last_played = sound
+                        last_play_time = now
+                    
+                if phase_light == 1:
+                    global_volume = 0.3
+                    start_timer = False
+                    you_shall_not_pass = False
+                    signal_pin_1.value = False
+                    signal_pin_2.value = False
+                    
+                    # Color grading effect for when person leaves the range.
+                    for i in range(0,15):
+                        pixels.brightness = 0.4
+                        for x in range(0,35):
+                            pixels.fill((255-int(x), 100-int(x), 0))
+                        for y in range(0,35):
+                            pixels.fill((155+int(x), 100-int(x), 0))
+                        distance = ultrasonic.distance # Check distance again to determine if the person is inside the range once again.
+                        if (receiving_pin_1.value == True or receiving_pin_2.value == True):
+                            start_timer = True 
+                            glitching_state = True
+                            break
+
+                        if (distance > 0 and distance < 68):
+                            start_timer = True
+                            break
+                    pixels.brightness = 1.0
+                    phase_light = 0
+                
+                if phase_light == 2:
+                    global_volume = 0.3
+                    start_timer = False
+                    you_shall_not_pass = False
+                    signal_pin_1.value = False
+                    signal_pin_2.value = False
+                    
+                    # Color grading effect for when person leaves the range.
+                    for i in range(0,15):
+                        pixels.brightness = 0.4
+                        for x in range(0,150):
+                            pixels.fill((255-int(x), 30, 30))
+                        distance = ultrasonic.distance # Check distance again to determine if the person is inside the range once again.
+                        if (receiving_pin_1.value == True or receiving_pin_2.value == True):
+                            start_timer = True 
+                            glitching_state = True
+                            break
+
+                        if (distance > 0 and distance < 68):
+                            start_timer = True
+                            break
+                    pixels.brightness = 1.0
+                    phase_light = 0
+
+                if phase_light == 3:
+                    global_volume = 0.3
+                    start_timer = False
+                    you_shall_not_pass = False
+                    signal_pin_1.value = False
+                    signal_pin_2.value = False
+                    
+                    # Color grading effect for when person leaves the range.
+                    for i in range(0,15):
+                        pixels.brightness = 0.4
+                        for x in range(0,150):
+                            pixels.fill((255-int(x), 30, 30))
+                        distance = ultrasonic.distance # Check distance again to determine if the person is inside the range once again.
+                        if (receiving_pin_1.value == True or receiving_pin_2.value == True):
+                            start_timer = True
+                            glitching_state = True
+                            break
+
+                        if (distance > 0 and distance < 68):
+                            start_timer = True
+                            break
+                    pixels.brightness = 1.0
+                    phase_light = 0
+
+
+
 
             elif distance >= 0 and glitching_state == True:
                 if not start_timer:
@@ -323,6 +413,7 @@ while True:
                 elapsed = time.monotonic() - start_time
 
                 if elapsed >= 1 and elapsed <= 10:
+                    phase_light = 1
                     sound = level1glitch_audio
                     for i in range(0, 40):
                         pixels.fill((255 - int(i), 100 - int(i), 0))  # Dimming effect.
@@ -330,6 +421,7 @@ while True:
                 elif elapsed >= 11 and elapsed <= 16:
                     # The audio.
                     sound = level2glitch_audio
+                    phase_light = 2
 
                     # ---- #
                     pixels.fill((30, 255, 255))
@@ -344,6 +436,7 @@ while True:
 
                 elif elapsed >= 17:
                     # The audio.
+                    phase_light = 3
                     sound = level3glitch_audio
 
                     # ---- #
