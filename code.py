@@ -156,6 +156,8 @@ this_photoresistor = False
 # Mandate other boards to light up.
 we_can_light = False
 
+# Globally deactivate photoresistor mode.
+photoresistor_mode = False
 
 while True:
     try:
@@ -169,17 +171,20 @@ while True:
 
         # Check if this is the board with the photoresistor.
 
-        if this_photoresistor == True:
-            if voltage <= 0.15:
-                signal_pin_1.value = True
-                signal_pin_2.value = True
-                we_can_light = True
-                this_photoresistor = False
+        if photoresistor_mode == True:
+            if this_photoresistor == True:
+                if voltage <= 0.15:
+                    signal_pin_1.value = True
+                    signal_pin_2.value = True
+                    we_can_light = True
+                    this_photoresistor = False
 
-        # Once the voltage is received after the photoresistor confirms there is light, turn everyone up.
-        if (
-            receiving_pin_1.value == True or receiving_pin_2.value == True
-        ) and this_photoresistor == False:
+            # Once the voltage is received after the photoresistor confirms there is light, turn everyone up.
+            if (
+                receiving_pin_1.value == True or receiving_pin_2.value == True
+            ) and this_photoresistor == False:
+                we_can_light = True
+        else:
             we_can_light = True
 
         # -------------- Light show! --------------------
@@ -234,7 +239,7 @@ while True:
                     you_shall_not_pass = False
 
                 # Make sound
-                global_volume = 1.0
+                # global_volume = 1.0
                 cooldown = (
                     10.0  # Cooldown has to be 0 preferably to avoid a silence gap.
                 )
@@ -296,7 +301,7 @@ while True:
                 signal_pin_2.value = False
 
                 # Make sound
-                global_volume = 1.0
+                # global_volume = 1.0
                 cooldown = (
                     20.0  # Cooldown has to be 0 preferably to avoid a silence gap.
                 )
@@ -363,7 +368,7 @@ while True:
                     # ---- #
 
                 # Make sound
-                global_volume = 1.0
+                # global_volume = 1.0
                 cooldown = (
                     10.0  # Cooldown has to be 0 preferably to avoid a silence gap.
                 )
